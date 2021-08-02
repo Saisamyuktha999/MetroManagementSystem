@@ -40,11 +40,11 @@ public class MetroDao implements MetroDaoInterface {
         return transactions;
 	}
 
+	
 	@Override
 	public Collection<Card> getCardDetails(int cardId) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		Connection connection = MySqlConnection.getConnection();
-
         Collection<Card> cardDetails = new ArrayList<Card>();
         PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM CARDDETAILS WHERE CARDID=?");
         preparedStatement.setInt(1, cardId);
@@ -57,7 +57,6 @@ public class MetroDao implements MetroDaoInterface {
             card.setBalance(resultSet.getInt("BALANCE"));
 
             cardDetails.add(card);
-
         }
         connection.close();
         return cardDetails;
@@ -72,6 +71,7 @@ public class MetroDao implements MetroDaoInterface {
         preparedStatement.setInt(1, balance);
         preparedStatement.setInt(2, cardId);
         int resultSet = preparedStatement.executeUpdate();
+        connection.commit();
         connection.close();
 		if(resultSet>0)
 		{
@@ -89,6 +89,7 @@ public class MetroDao implements MetroDaoInterface {
         preparedStatement.setInt(2, sourceId);
  
         int resultSet = preparedStatement.executeUpdate();
+        connection.commit();
         connection.close();
 		if(resultSet>0)
 		{
@@ -127,6 +128,7 @@ public class MetroDao implements MetroDaoInterface {
         preparedStatement.setInt(1, 100);
 
         int rows = preparedStatement.executeUpdate();
+        connection.commit();
         connection.close();
         return (rows>0);
 		
@@ -143,6 +145,7 @@ public class MetroDao implements MetroDaoInterface {
         preparedStatement.setInt(3, transid);
         int affectedRows = preparedStatement.executeUpdate();
         connection.commit();
+        connection.close();
         return affectedRows > 0;
 		
 	}
@@ -172,24 +175,6 @@ public class MetroDao implements MetroDaoInterface {
         ResultSet resultSet = preparedStatement.executeQuery();
         connection.close();
         return resultSet.next();
-	}
-
-	@Override
-	public int rechargeCard(int cardId, int amount) throws SQLException, IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		Collection<Card> card = new ArrayList<Card>();
-		card = getCardDetails(cardId);
-        int balance =-1;
-		for(Card card1:card)
-        {
-            balance = card1.getBalance();
-        }
-        balance=balance+amount;
-        boolean status = updateBalance(cardId,balance);
-       	if(status==true)
-       		return balance;
-       	return -1;
-        
 	}
 
 	@Override

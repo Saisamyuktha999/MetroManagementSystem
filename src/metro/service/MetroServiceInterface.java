@@ -15,8 +15,7 @@ public interface MetroServiceInterface {
     public boolean swipeOut(int cardId,int destinationId) throws SQLException, IOException, ClassNotFoundException;
     public Collection<Station> getStationDetails() throws SQLException, IOException, ClassNotFoundException;
     public Collection<Card> createNewCard() throws SQLException, IOException, ClassNotFoundException;
-    public void showCardException();
-    public void showBalanceException();
     public boolean cardExists(int cardId) throws SQLException, IOException, ClassNotFoundException  ;
     public int rechargeBalance(int cardId,int amount);
+    public int rechargeCard(int cardId, int amount) throws SQLException, IOException, ClassNotFoundException;
 }

@@ -12,7 +12,7 @@ import java.util.Scanner;
 public class MetroClient {
     public static void main(String[] args){
 
-        int swipeinId=0;
+       
         MetroPresentationInterface metroPresentation=new MetroPresentation();
         Scanner scanner=new Scanner(System.in);
         System.out.println("1. New User");

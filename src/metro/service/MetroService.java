@@ -95,6 +95,10 @@ public class MetroService implements MetroServiceInterface{
 						display.updateBalanceException();
 					}
 				}
+				else
+				{
+					display.insufficientBalance();
+				}
 			}
 		}
         return status;
@@ -120,18 +124,6 @@ public class MetroService implements MetroServiceInterface{
 	}
 
 	@Override
-	public void showCardException() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void showBalanceException() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public boolean cardExists(int cardId) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		return metroDao.cardExists(cardId);
@@ -144,7 +136,7 @@ public class MetroService implements MetroServiceInterface{
 		if(amount>0)
 		{
 			try {
-				bal = metroDao.rechargeCard(cardId, amount);
+				bal = rechargeCard(cardId, amount);
 			} catch (ClassNotFoundException | SQLException | IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -154,6 +146,23 @@ public class MetroService implements MetroServiceInterface{
 			
 		}
 		return 0;
+	}
+	
+	public int rechargeCard(int cardId, int amount) throws SQLException, IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		Collection<Card> card = new ArrayList<Card>();
+		card = getCardDetails(cardId);
+        int balance =-1;
+		for(Card card1:card)
+        {
+            balance = card1.getBalance();
+        }
+        balance=balance+amount;
+        boolean status = metroDao.updateBalance(cardId,balance);
+       	if(status==true)
+       		return balance;
+       	return -1;
+        
 	}
 
 }

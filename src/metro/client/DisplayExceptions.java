@@ -13,4 +13,9 @@ public class DisplayExceptions {
 	{
 		System.out.println("Balance Updated failed");
 	}
+	
+	public void insufficientBalance()
+	{
+		System.out.println("Balance is less than required minimum balance.");
+	}
 }

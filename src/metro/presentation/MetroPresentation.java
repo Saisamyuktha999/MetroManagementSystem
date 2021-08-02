@@ -133,7 +133,7 @@ public class MetroPresentation implements MetroPresentationInterface{
                 break;
             case 6:
             	System.out.println("Thank You");
-            	break;
+            	System.exit(0);
 
         }
 		
