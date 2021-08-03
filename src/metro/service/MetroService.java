@@ -21,17 +21,20 @@ public class MetroService implements MetroServiceInterface{
 	public Collection<TransactionHistory> getTransactionDetails(int cardId)
 			throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
-		Collection<TransactionHistory> transactionHistory = new ArrayList<TransactionHistory>();
-		transactionHistory = metroDao.getTransactionDetails(cardId);
-		return transactionHistory;
+		return metroDao.getTransactionDetails(cardId);
 	}
 
 	@Override
-	public Collection<Card> getCardDetails(int cardId) throws SQLException, IOException, ClassNotFoundException {
+	public int getBalance(int cardId) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
+		int balance =0;
 		Collection<Card> card = new ArrayList<Card>();
 		card = metroDao.getCardDetails(cardId);
-		return card;
+		for(Card c : card)
+		{
+			balance=c.getBalance();
+		}
+		return balance;
 	}
 
 
@@ -39,16 +42,7 @@ public class MetroService implements MetroServiceInterface{
 	public boolean swipeIn(int cardId, int sourceId) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		boolean status =false;
-		if(metroDao.cardExists(cardId)==true)
-		{
-			if(metroDao.stationExists(cardId)==true) {
-			 status = metroDao.swipeIn(cardId,sourceId);
-			}
-			else
-			{
-				display.noStation();
-			}
-        }
+		 status = metroDao.swipeIn(cardId,sourceId);
         return status;
 	
 	}
@@ -64,43 +58,40 @@ public class MetroService implements MetroServiceInterface{
 		for(TransactionHistory trans: lastTransaction)
 		{
 			transid=trans.getTransactionId();
-			fare=trans.getFare();
+			fare = trans.getFare();
 			sourceid = trans.getSourceId();
 		}
-		
-		if(fare!=0) {
-			if(sourceid != 0)
+		if(fare==0) {
+			if(sourceid<destinationId)
 			{
 				fare=(destinationId-sourceid)*5;
+			}
+			else
+			{
+				fare=(sourceid-destinationId)*5;
 			}
 		}
 		else
 		{
 			display.transactionException();
 		}
-		boolean status = metroDao. updateTransactionHistory(transid,cardId,sourceid,destinationId,fare);
-		Collection<Card> card = new ArrayList<Card>();
-		if(status==true)
+		int balance = getBalance(cardId);
+		if(balance-fare>20)
 		{
-			card = metroDao.getCardDetails(cardId);
-			for(Card c:card)
+			balance=balance-fare;
+			boolean temp = metroDao.reduceBalance(cardId, balance);
+			if(temp==false)
 			{
-				int balance = c.getBalance();
-				if(balance-fare>20)
-				{
-					balance=balance-fare;
-					boolean temp = metroDao.updateBalance(cardId, balance);
-					if(temp==false)
-					{
-						display.updateBalanceException();
-					}
-				}
-				else
-				{
-					display.insufficientBalance();
-				}
+				display.updateBalanceException();
+				return false;
 			}
 		}
+		else
+		{
+			display.insufficientBalance();
+			return false;
+		}
+		boolean status = metroDao. updateTransactionHistory(transid,destinationId,fare);
         return status;
 	}
 
@@ -126,43 +117,30 @@ public class MetroService implements MetroServiceInterface{
 	@Override
 	public boolean cardExists(int cardId) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
-		return metroDao.cardExists(cardId);
+		boolean status = false;
+		status = metroDao.cardExists(cardId);
+		return status;
 	}
 
 	@Override
-	public int rechargeBalance(int cardId, int amount) {
-		int bal = 0;
+	public boolean rechargeBalance(int cardId, int amount) throws SQLException, IOException, ClassNotFoundException{
+		boolean status = false;
 		// TODO Auto-generated method stub
 		if(amount>0)
 		{
 			try {
-				bal = rechargeCard(cardId, amount);
+				status = metroDao.updateBalance(cardId,amount);
 			} catch (ClassNotFoundException | SQLException | IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			return bal;
-			
 		}
-		return 0;
-	}
-	
-	public int rechargeCard(int cardId, int amount) throws SQLException, IOException, ClassNotFoundException {
-		// TODO Auto-generated method stub
-		Collection<Card> card = new ArrayList<Card>();
-		card = getCardDetails(cardId);
-        int balance =-1;
-		for(Card card1:card)
-        {
-            balance = card1.getBalance();
-        }
-        balance=balance+amount;
-        boolean status = metroDao.updateBalance(cardId,balance);
-       	if(status==true)
-       		return balance;
-       	return -1;
-        
+		else
+		{
+			display.negativeAmountException();
+		}
+		return status;
+		
 	}
 
 }

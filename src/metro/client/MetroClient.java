@@ -15,6 +15,7 @@ public class MetroClient {
        
         MetroPresentationInterface metroPresentation=new MetroPresentation();
         Scanner scanner=new Scanner(System.in);
+        while(true) {
         System.out.println("1. New User");
         System.out.println("2. Existing User");
         System.out.println("3. Exit");
@@ -23,13 +24,14 @@ public class MetroClient {
         switch(choice)
         {
             case 1:
-            	metroPresentation.newUser();
+            	int userId = metroPresentation.newUser();
+            	System.out.println("Your ID: "+userId);
             	while(true)
             	{
             		metroPresentation.showOptions();
             		System.out.println("Enter choice : ");
             		int choice1 = scanner.nextInt();
-            		metroPresentation.performOption(choice1);
+            		metroPresentation.performOption(userId,choice1);
             		
             	}
           
@@ -43,7 +45,7 @@ public class MetroClient {
             			metroPresentation.showOptions();
             			System.out.println("Enter choice : ");
             			int choice2 = scanner.nextInt();
-            			metroPresentation.performOption(choice2);
+            			metroPresentation.performOption(id,choice2);
             		}
             	}
             	else
@@ -52,8 +54,10 @@ public class MetroClient {
             	}
             	break;
             case 3:
+            	System.out.println("Have a good Day!!");
             	System.exit(0);
             	
+        	}
         }
     }
     
@@ -66,25 +70,13 @@ public class MetroClient {
     }
     
     public void displayTransactions(Collection<TransactionHistory> transaction) {
+		System.out.println("TransactionId\tCardId\tSourceId\tDestinationId()\tSwapInTime\tOutTime\tFare");
+
     	for(TransactionHistory trans:transaction) {
-    		System.out.println(trans.getTransactionId()+"  "+trans.getCardId()+"  "+trans.getSourceId()+"  "+trans.getDestinationId()+"  "+trans.getSwapInTime()+"  "+trans.getSwapOutTime()+"  "+trans.getFare());
+    		System.out.println(trans.getTransactionId()+" \t "+trans.getCardId()+" \t "+trans.getSourceId()+" \t "+trans.getDestinationId()+" \t "+trans.getSwapInTime()+" \t "+trans.getSwapOutTime()+" \t "+trans.getFare());
     	}
     }
-    public void balanceStatus(int status)
-    {
-    	if(status==0)
-    	{
-    		System.out.println("Amount should not be negative.");
-    	}
-    	else if(status == -1)
-    	{
-    		System.out.println("Updation of recharge failed!!!");
-    	}
-    	else
-    	{
-    		System.out.println("Balance updated. current balance is:"+status);
-    	}
-    }
+
     public void displayCard(Collection<Card> card)
     {
     	for(Card c:card)

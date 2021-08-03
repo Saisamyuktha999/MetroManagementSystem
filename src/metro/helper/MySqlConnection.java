@@ -22,6 +22,7 @@ public class MySqlConnection {
 		Class.forName(properties.getProperty("db.driverClassName"));
 
 		Connection connection = DriverManager.getConnection(properties.getProperty("db.url"), properties.getProperty("db.userName"), properties.getProperty("db.password"));
+		connection.setAutoCommit(false);
 		return connection;
 	}
 }

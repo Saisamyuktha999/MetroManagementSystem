@@ -9,6 +9,7 @@ import java.util.Scanner;
 import metro.bean.Card;
 import metro.bean.Station;
 import metro.bean.TransactionHistory;
+import metro.client.DisplayExceptions;
 import metro.client.MetroClient;
 import metro.service.MetroService;
 import metro.service.MetroServiceInterface;
@@ -16,6 +17,7 @@ import metro.service.MetroServiceInterface;
 public class MetroPresentation implements MetroPresentationInterface{
 	MetroServiceInterface metroService = new MetroService();
 	MetroClient metroClient = new MetroClient();
+	DisplayExceptions display = new DisplayExceptions();
 	@Override
 	public void showOptions() {
 		// TODO Auto-generated method stub
@@ -29,7 +31,7 @@ public class MetroPresentation implements MetroPresentationInterface{
 	}
 
 	@Override
-	public void performOption(int choice) {
+	public void performOption(int cardId,int choice) {
 		
 		// TODO Auto-generated method stub
 		Scanner scanner = new Scanner(System.in);
@@ -37,8 +39,6 @@ public class MetroPresentation implements MetroPresentationInterface{
         {
             case 1:
             	Collection<Station> stations = new ArrayList<Station>();
-                System.out.println("Enter cardId:");
-                int id = scanner.nextInt();
 			try {
 				stations = metroService.getStationDetails();
 			} 
@@ -50,7 +50,7 @@ public class MetroPresentation implements MetroPresentationInterface{
                 System.out.println("Enter Source Station Id: ");
                 int source = scanner.nextInt();
                 try{
-                    boolean status = metroService.swipeIn(id,source);
+                    boolean status = metroService.swipeIn(cardId,source);
                     if(status==true)
                     {
                         System.out.println("Swipe in successfull.");
@@ -66,8 +66,6 @@ public class MetroPresentation implements MetroPresentationInterface{
                 break;
             case 2:
             	Collection<Station> stations1 = new ArrayList<Station>();
-            	System.out.println("Enter cardId:");
-            	int id1 = scanner.nextInt();
             	try {
             	stations1 = metroService.getStationDetails();
             	}catch(SQLException| IOException| ClassNotFoundException e)
@@ -78,7 +76,7 @@ public class MetroPresentation implements MetroPresentationInterface{
                 System.out.println("Enter Destination Station: ");
                 int destination = scanner.nextInt();
                 try{
-                    boolean status = metroService.swipeOut(id1,destination);
+                    boolean status = metroService.swipeOut(cardId,destination);
                     if(status==true)
                     {
                         System.out.println("Swipe out successfull. Balance Updated");
@@ -93,15 +91,10 @@ public class MetroPresentation implements MetroPresentationInterface{
                 }
                 break;
             case 3:
-                Collection<Card> card = new ArrayList<Card>();
-                System.out.println("Enter card Id:");
-                int cardid = scanner.nextInt();
+                int balance=0;
                 try{
-                    card = metroService.getCardDetails(cardid);
-                    for(Card card1:card)
-                    {
-                        System.out.print(" Balance is "+card1.getBalance());
-                    }
+                    balance = metroService.getBalance(cardId);
+                    System.out.println(" Balance is "+balance);
                 }catch(SQLException| IOException| ClassNotFoundException e)
                 {
                     e.printStackTrace();
@@ -109,8 +102,6 @@ public class MetroPresentation implements MetroPresentationInterface{
                 break;
 
             case 4:
-                System.out.println("Enter cardId:");
-                int cardId = scanner.nextInt();
                 Collection<TransactionHistory> transactionHistory = new ArrayList<TransactionHistory>();
                 try {
                     transactionHistory = metroService.getTransactionDetails(cardId);
@@ -121,14 +112,18 @@ public class MetroPresentation implements MetroPresentationInterface{
                 }
                 break;
             case 5:
-                System.out.println("Enter card Id:");
-                int cardID = scanner.nextInt();
-                if(isCard(cardID)==true)
+                if(isCard(cardId)==true)
                 {
                     System.out.println("Enter Amount to recharge: ");
                     int amount = scanner.nextInt();
-                    int status = metroService.rechargeBalance(cardID,amount);
-                    metroClient.balanceStatus(status);
+                    boolean status = false;
+					try {
+						status = metroService.rechargeBalance(cardId,amount);
+					} catch (ClassNotFoundException | SQLException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+                    display.balanceStatus(status);
                 }
                 break;
             case 6:
@@ -140,19 +135,22 @@ public class MetroPresentation implements MetroPresentationInterface{
 	}
 
 	@Override
-	public void newUser() {
+	public int newUser() {
 		// TODO Auto-generated method stub
+		int id=0;
 		try {
 			Collection<Card> card = new ArrayList<Card>();
             card = metroService.createNewCard();
             for(Card c:card) {
                 System.out.println("New Card Generated.");
+                id=c.getCardId();
                 metroClient.displayCard(card);
             }
         }catch(SQLException| IOException| ClassNotFoundException e)
         {
             e.printStackTrace();
         }
+		return id;
 	}
 
 	@Override

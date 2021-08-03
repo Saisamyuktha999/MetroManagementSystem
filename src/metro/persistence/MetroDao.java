@@ -18,7 +18,7 @@ public class MetroDao implements MetroDaoInterface {
 			throws ClassNotFoundException, SQLException, IOException {
 		// TODO Auto-generated method stub
 		Connection connection = MySqlConnection.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT t.transactionid, t.cardid, t.sourceid, t.destinationid, t.fare, t.swipeintime, t.swipeouttime FROM transactionhistory t WHERE card_id = ? ORDER BY transaction_id DESC");
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT TRANSACTIONID, CARDID, SOURCESTATIONID, DESTINANTIONSTATIONID, SWAPINTIME, SWAPOUTTIME,FARE FROM TRANSACTIONDETAILS WHERE CARDID = ? ORDER BY TRANSACTIONID DESC");
         preparedStatement.setInt(1, cardId);
         ResultSet resultSet = preparedStatement.executeQuery();
         Collection<TransactionHistory> transactions = new ArrayList<TransactionHistory>();
@@ -27,16 +27,15 @@ public class MetroDao implements MetroDaoInterface {
         	TransactionHistory th = new TransactionHistory();
         	th.setCardId(resultSet.getInt("cardid"));
         	th.setTransactionId(resultSet.getInt("transactionid"));
-        	th.setSourceId(resultSet.getInt("sourceid"));
-        	th.setDestinationId(resultSet.getInt("destinationid"));
-        	th.setSwapInTime(resultSet.getString("swipeintime"));
-        	th.setSwapOutTime(resultSet.getString("swipeOutTime"));
+        	th.setSourceId(resultSet.getInt("sourceStationid"));
+        	th.setDestinationId(resultSet.getInt("destinantionStationid"));
+        	th.setSwapInTime(resultSet.getString("swapintime"));
+        	th.setSwapOutTime(resultSet.getString("swapOutTime"));
         	th.setFare(resultSet.getInt("fare"));
         	
         	transactions.add(th);
         	
         }
-        connection.close();
         return transactions;
 	}
 
@@ -58,44 +57,34 @@ public class MetroDao implements MetroDaoInterface {
 
             cardDetails.add(card);
         }
-        connection.close();
         return cardDetails;
 
 	}
 
 	@Override
-	public boolean updateBalance(int cardId,int balance) throws SQLException, IOException, ClassNotFoundException {
+	public boolean updateBalance(int cardId,int amount) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		Connection connection = MySqlConnection.getConnection();
-		PreparedStatement preparedStatement = connection.prepareStatement("UPDATE CARDDETAILS SET BALANCE =? WHERE CARDID=?");
-        preparedStatement.setInt(1, balance);
+		PreparedStatement preparedStatement = connection.prepareStatement("UPDATE CARDDETAILS SET BALANCE = BALANCE + ? WHERE CARDID=?");
+        preparedStatement.setInt(1, amount);
         preparedStatement.setInt(2, cardId);
         int resultSet = preparedStatement.executeUpdate();
         connection.commit();
-        connection.close();
-		if(resultSet>0)
-		{
-			return true;
-		}
-		return false;
+        return(resultSet>0);
 	}
 
 	@Override
 	public boolean swipeIn(int cardId, int sourceId) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
         Connection connection = MySqlConnection.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO TRANSACTIONHISTORY(cardId,sourceId,swipeInTime) VALUES(?,?,SYSDATE(),?)");
+        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO TRANSACTIONDETAILS(cardId,sourcestationId,swapInTime) VALUES(?,?,SYSDATE())");
         preparedStatement.setInt(1, cardId);
         preparedStatement.setInt(2, sourceId);
  
         int resultSet = preparedStatement.executeUpdate();
         connection.commit();
-        connection.close();
-		if(resultSet>0)
-		{
-			return true;
-		}
-		return false;
+        System.out.println(resultSet);
+		return (resultSet>0);
 	}
 
 	@Override
@@ -115,7 +104,6 @@ public class MetroDao implements MetroDaoInterface {
             stations.add(station);
 
         }
-        connection.close();
         return stations;
 		
 	}
@@ -126,7 +114,6 @@ public class MetroDao implements MetroDaoInterface {
 		Connection connection = MySqlConnection.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO CARDDETAILS(balance,issueDate) VALUES(?,SYSDATE())");
         preparedStatement.setInt(1, 100);
-
         int rows = preparedStatement.executeUpdate();
         connection.commit();
         connection.close();
@@ -135,17 +122,16 @@ public class MetroDao implements MetroDaoInterface {
 	}
 
 	@Override
-	public boolean updateTransactionHistory(int transid,int cardId,int sourceid, int destinationId, int fare)
+	public boolean updateTransactionHistory(int transid, int destinationId, int fare)
 			throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		Connection connection = MySqlConnection.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE transactionHistory SET fare = ?,destinationId=? WHERE transaction_id = ?");
+        PreparedStatement preparedStatement = connection.prepareStatement("UPDATE transactiondetails SET fare = ?,destinantionstationId=?,swapouttime=sysdate() WHERE transactionid = ?");
         preparedStatement.setInt(1, fare);
         preparedStatement.setInt(2, destinationId);
         preparedStatement.setInt(3, transid);
         int affectedRows = preparedStatement.executeUpdate();
         connection.commit();
-        connection.close();
         return affectedRows > 0;
 		
 	}
@@ -158,8 +144,7 @@ public class MetroDao implements MetroDaoInterface {
         preparedStatement.setInt(1, cardId);
 
         ResultSet result = preparedStatement.executeQuery();
-        connection.close();
-        if(result != null) {
+        while(result.next()) {
         	return true;
         }
         return false;
@@ -169,11 +154,9 @@ public class MetroDao implements MetroDaoInterface {
 	public boolean stationExists(int stationId) throws SQLException, IOException, ClassNotFoundException {
 		// TODO Auto-generated method stub
 		Connection connection = MySqlConnection.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM STATION WHERE STATIONID=?");
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT STATIONID FROM STATION WHERE STATIONID=?");
         preparedStatement.setInt(1, stationId);
-        
         ResultSet resultSet = preparedStatement.executeQuery();
-        connection.close();
         return resultSet.next();
 	}
 
@@ -188,10 +171,9 @@ public class MetroDao implements MetroDaoInterface {
         {
         	Card c = new Card();
         	c.setCardId(resultSet.getInt("cardid"));
-        	c.setCardId(resultSet.getInt("balance"));
+        	c.setBalance(resultSet.getInt("balance"));
         	newCard.add(c);
         }
-        connection.close();
 		return newCard;
 	}
 
@@ -200,7 +182,7 @@ public class MetroDao implements MetroDaoInterface {
 			throws ClassNotFoundException, SQLException, IOException {
 		// TODO Auto-generated method stub
 		Connection connection = MySqlConnection.getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT t.transactionid, t.cardid, t.sourceid, t.destinationid, t.fare, t.swipeintime, t.swipeouttime FROM transactionhistory t WHERE card_id = ? ORDER BY transaction_id DESC LIMIT 1");
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT TRANSACTIONID, CARDID, SOURCESTATIONID, DESTINANTIONSTATIONID, FARE, SWAPINTIME,SWAPOUTTIME FROM TRANSACTIONDETAILS WHERE CARDID = ? ORDER BY TRANSACTIONID DESC LIMIT 1");
         preparedStatement.setInt(1, cardId);
         ResultSet resultSet = preparedStatement.executeQuery();
         Collection<TransactionHistory> transactions = new ArrayList<TransactionHistory>();
@@ -209,18 +191,30 @@ public class MetroDao implements MetroDaoInterface {
         	TransactionHistory th = new TransactionHistory();
         	th.setCardId(resultSet.getInt("cardid"));
         	th.setTransactionId(resultSet.getInt("transactionid"));
-        	th.setSourceId(resultSet.getInt("sourceid"));
-        	th.setDestinationId(resultSet.getInt("destinationid"));
-        	th.setSwapInTime(resultSet.getString("swipeintime"));
-        	th.setSwapOutTime(resultSet.getString("swipeOutTime"));
+        	th.setSourceId(resultSet.getInt("sourcestationid"));
+        	th.setDestinationId(resultSet.getInt("destinantionstationid"));
+        	th.setSwapInTime(resultSet.getString("swapintime"));
+        	th.setSwapOutTime(resultSet.getString("swapOutTime"));
         	th.setFare(resultSet.getInt("fare"));
         	
         	transactions.add(th);
         	
         }
-        connection.close();
         return transactions;
 	
+	}
+
+
+	@Override
+	public boolean reduceBalance(int cardId, int fare) throws SQLException, IOException, ClassNotFoundException {
+		// TODO Auto-generated method stub
+		Connection connection = MySqlConnection.getConnection();
+		PreparedStatement preparedStatement = connection.prepareStatement("UPDATE CARDDETAILS SET BALANCE = ? WHERE CARDID=?");
+        preparedStatement.setInt(1, fare);
+        preparedStatement.setInt(2, cardId);
+        int resultSet = preparedStatement.executeUpdate();
+        connection.commit();
+        return(resultSet>0);
 	}
 
 }

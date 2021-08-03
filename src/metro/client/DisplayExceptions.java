@@ -18,4 +18,21 @@ public class DisplayExceptions {
 	{
 		System.out.println("Balance is less than required minimum balance.");
 	}
+	
+	public void balanceStatus(boolean status)
+    {
+    	if(status == false)
+    	{
+    		System.out.println("Updation of recharge failed!!!");
+    	}
+    	else
+    	{
+    		System.out.println("Balance updated!!!");
+    	}
+    }
+	
+	public void negativeAmountException()
+	{
+		System.out.println("Amount can not be negative");
+	}
 }
